@@ -1,0 +1,159 @@
+
+        :root {
+            --card-bg: rgba(255, 255, 255, 0.2);
+            --card-border: rgba(255, 255, 255, 0.3);
+            --text-primary: #F0F9FF; /* ATTRACTIVE: Crisp, light sky blue */
+            --text-secondary: #E0F2FE; /* ATTRACTIVE: Slightly darker sky blue */
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dark mode theme */
+        html.dark {
+            --card-bg: rgba(31, 41, 55, 0.5); /* gray-800 with opacity */
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #FEF3C7;     /* UNIQUE: Soft, elegant gold */
+            --text-secondary: #D1D5DB;   /* NEUTRAL: Readable light gray */
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937;
+            transition: background-image 0.5s ease;
+        }
+        
+        #background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -20;
+            transition: opacity 1s ease-in-out;
+            animation: slow-pan 40s linear infinite alternate;
+        }
+
+        @keyframes slow-pan {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        .weather-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px 0 var(--shadow-color);
+            transition: background 0.5s ease, border 0.5s ease, color 0.5s ease;
+        }
+
+        .forecast-item {
+            background: rgba(255, 255, 255, 0.15);
+            transition: background-color 0.3s ease;
+            animation: slide-in 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .dark .forecast-item { background: rgba(255, 255, 255, 0.05); }
+        .forecast-item:hover { background: rgba(255, 255, 255, 0.25); }
+        .dark .forecast-item:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .hourly-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .hourly-details.open { max-height: 500px; padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left-color: #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .weather-scene {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .weather-scene.active { opacity: 1; }
+        
+        .snowflake { position: absolute; background: white; border-radius: 50%; animation: fall linear infinite; }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) translateX(0); opacity: 1; }
+            100% { transform: translateY(110vh) translateX(5vw); opacity: 0; }
+        }
+
+        .raindrop {
+            position: absolute; bottom: 100%; width: 1px; height: 50px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.4));
+            animation: rain linear infinite;
+        }
+        @keyframes rain {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(110vh); }
+        }
+        
+        #sunny-mild .sun-ray, #sunny-bright .sun-ray, #heat-shimmer .sun-ray { transform-origin: center; animation: rotate 20s linear infinite; }
+        #heat-shimmer .shimmer { stroke-dasharray: 10; stroke-dashoffset: 20; animation: shimmer-anim 2s linear infinite; }
+        @keyframes rotate { to { transform: rotate(360deg); } }
+        @keyframes shimmer-anim { to { stroke-dashoffset: 0; } }
+
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Modal styles */
+        #hourly-modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #hourly-modal-backdrop.visible { opacity: 1; visibility: visible; }
+
+        #hourly-modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            z-index: 50;
+            width: 90%;
+            max-width: 320px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+        }
+        #hourly-modal-backdrop.visible #hourly-modal {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
+        
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { display: inline-block; height: 26px; position: relative; width: 50px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: rgba(0,0,0,0.3); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
+        .slider:before { background-color: #fff; bottom: 3px; content: ""; height: 20px; left: 3px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; }
+        input:checked + .slider { background-color: #66a6ff; }
+        input:checked + .slider:before { transform: translateX(24px); }
+ 
