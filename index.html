@@ -8,18 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./style.css">
 </head>
-<body class="transition-colors duration-500 ease-in-out">
-    <img id="background-image" src="https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=1951&auto=format&fit=crop" alt="Sky with clouds background">
-
-    <div id="weather-illustration-container" class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden">
-        <div id="snowy-scene" class="weather-scene"></div>
-        <div id="rainy-scene" class="weather-scene"></div>
-        <div id="sunny-mild" class="weather-scene flex items-center justify-center"><svg viewBox="0 0 200 200" class="w-full h-full opacity-20"><circle cx="100" cy="100" r="40" fill="#FFD700" /><g class="sun-ray" stroke="#FFD700" stroke-width="3" stroke-linecap="round"><line x1="100" y1="30" x2="100" y2="50" /> <line x1="100" y1="150" x2="100" y2="170" /><line x1="30" y1="100" x2="50" y2="100" /> <line x1="150" y1="100" x2="170" y2="100" /><line x1="58" y1="58" x2="72" y2="72" /> <line x1="128" y1="128" x2="142" y2="142" /><line x1="58" y1="142" x2="72" y2="128" /> <line x1="128" y1="72" x2="142" y2="58" /></g></svg></div>
-        <div id="sunny-bright" class="weather-scene flex items-center justify-center"><svg viewBox="0 0 200 200" class="w-full h-full opacity-30"><circle cx="100" cy="100" r="50" fill="#FFA500" /><g class="sun-ray" stroke="#FFA500" stroke-width="4" stroke-linecap="round"><line x1="100" y1="20" x2="100" y2="45" /> <line x1="100" y1="155" x2="100" y2="180" /><line x1="20" y1="100" x2="45" y2="100" /> <line x1="155" y1="100" x2="180" y2="100" /><line x1="48" y1="48" x2="65" y2="65" /> <line x1="135" y1="135" x2="152" y2="152" /><line x1="48" y1="152" x2="65" y2="135" /> <line x1="135" y1="65" x2="152" y2="48" /></g></svg></div>
-        <div id="heat-shimmer" class="weather-scene flex items-center justify-center"><svg viewBox="0 0 200 200" class="w-full h-full opacity-40"><defs><filter id="glow"><feGaussianBlur stdDeviation="3.5" result="coloredBlur" /><feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs><circle cx="100" cy="100" r="55" fill="#FF4500" filter="url(#glow)" /><g class="sun-ray" stroke="#FF4500" stroke-width="5" stroke-linecap="round"><line x1="100" y1="10" x2="100" y2="40" /> <line x1="100" y1="160" x2="100" y2="190" /><line x1="10" y1="100" x2="40" y2="100" /> <line x1="160" y1="100" x2="190" y2="100" /></g><path class="shimmer" fill="none" stroke="rgba(255,165,0,0.5)" stroke-width="15" d="M 0 180 Q 50 170, 100 180 T 200 180" /><path class="shimmer" fill="none" stroke="rgba(255,165,0,0.3)" stroke-width="10" d="M 0 190 Q 50 200, 100 190 T 200 190" style="animation-delay: 0.5s"/></svg></div>
-    </div>
+<body>
+    <!-- Weather Mood Scenes -->
+    <div id="rain-scene" class="weather-scene"></div>
+    <div id="night-scene" class="weather-scene"></div>
+    <div id="thunder-scene" class="weather-scene"></div>
 
     <main class="w-full max-w-4xl mx-auto p-4 z-10 relative">
         <div class="flex justify-between items-center mb-4">
@@ -45,7 +40,6 @@
                             <span>Feels like</span><span>:</span><span class="font-semibold text-right" id="feels-like" style="color: var(--text-primary)">--°C</span>
                             <span>Humidity</span><span>:</span><span class="font-semibold text-right" id="humidity" style="color: var(--text-primary)">--%</span>
                             <span>Wind</span><span>:</span><span class="font-semibold text-right" id="wind-speed" style="color: var(--text-primary)">-- km/h</span>
-                            <span>Air Quality</span><span>:</span><span class="font-semibold text-right" id="air-quality" style="color: var(--text-primary)">--</span>
                         </div>
                     </div>
                 </div>
@@ -53,34 +47,45 @@
              <div id="loader-container" class="flex justify-center items-center py-10"><div class="loader"></div></div>
         </div>
       
+        <!-- Health & Wellness Dashboard -->
+        <div id="health-dashboard" class="weather-card rounded-3xl p-6 sm:p-8 mb-6 hidden">
+            <h3 class="text-xl font-semibold mb-4">❤️ Health & Wellness</h3>
+            <div id="health-container" class="space-y-4">
+                <div id="aqi-health" class="health-item rounded-xl p-3"></div>
+                <div id="uv-health" class="health-item rounded-xl p-3"></div>
+                <div id="hydration-health" class="health-item rounded-xl p-3"></div>
+            </div>
+        </div>
+
+        <!-- Today's Forecast -->
+        <div id="today-forecast-card" class="weather-card rounded-3xl p-6 sm:p-8 mb-6 hidden">
+            <h3 class="text-xl font-semibold mb-4">Today's Forecast</h3>
+            <div id="today-forecast-container" class="flex overflow-x-auto space-x-4 pb-4">
+                <!-- Hourly items will be injected here by JavaScript -->
+            </div>
+        </div>
+
         <div id="forecast-card" class="weather-card rounded-3xl p-6 sm:p-8 hidden">
             <h3 class="text-xl font-semibold mb-4">4-Day Forecast</h3>
             <div id="forecast-container" class="space-y-2"></div>
         </div>
     </main>
     
-    <!-- Hourly Details Modal -->
     <div id="hourly-modal-backdrop">
         <div id="hourly-modal" class="weather-card rounded-2xl p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="font-bold text-lg" id="modal-time">--:--</h4>
-                <button id="modal-close-btn" class="text-2xl leading-none">&times;</button>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-lg" id="modal-time">--:--</h4><button id="modal-close-btn" class="text-2xl leading-none">&times;</button></div>
             <div id="modal-icon" class="w-20 h-20 mx-auto mb-4"></div>
-            <div class="text-center mb-4">
-                <p class="text-5xl font-bold" id="modal-temp">--°C</p>
-            </div>
+            <div class="text-center mb-4"><p class="text-5xl font-bold" id="modal-temp">--°C</p></div>
             <div class="space-y-2 text-sm" style="color: var(--text-secondary)">
                 <div class="flex justify-between"><span>Feels Like</span><span id="modal-feels-like" class="font-semibold" style="color: var(--text-primary)">--°C</span></div>
                 <div class="flex justify-between"><span>Humidity</span><span id="modal-humidity" class="font-semibold" style="color: var(--text-primary)">--%</span></div>
                 <div class="flex justify-between"><span>Wind Speed</span><span id="modal-wind" class="font-semibold" style="color: var(--text-primary)">-- km/h</span></div>
-                <div class="flex justify-between"><span>Air Quality</span><span id="modal-aqi" class="font-semibold" style="color: var(--text-primary)">--</span></div>
+                <div class="flex justify-between items-start"><span>Air Quality</span><span id="modal-aqi" class="font-semibold text-right" style="color: var(--text-primary)">--</span></div>
             </div>
         </div>
     </div>
 
-
-    <script src="./script.js"></script>
+ <script src="./script.js"></script>
 </body>
 </html>
 
