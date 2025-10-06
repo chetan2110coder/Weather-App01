@@ -1,15 +1,6 @@
 
-        /* Base styles */
+        /* Dark Mode Styles */
         :root {
-            --card-bg: rgba(255, 255, 255, 0.2);
-            --card-border: rgba(255, 255, 255, 0.3);
-            --text-primary: #F0F9FF;
-            --text-secondary: #E0F2FE;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-        }
-
-        /* Dark mode theme */
-        html.dark {
             --card-bg: rgba(31, 41, 55, 0.5);
             --card-border: rgba(255, 255, 255, 0.1);
             --text-primary: #FEF3C7;
@@ -19,9 +10,30 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            transition: background 0.5s ease;
+            background-color: #111827; /* Fallback background */
         }
         
+        /* Background Image Scene Styles */
+        .weather-scene {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -10;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .weather-scene.active {
+            opacity: 1;
+        }
+
+        #clear-day-scene { background-image: url('https://images.unsplash.com/photo-1622278647429-71bc9tweeter-e904e8?q=80&w=1974&auto=format&fit=crop'); }
+        #clouds-scene { background-image: url('https://images.unsplash.com/photo-1499956827185-0d63ee78a910?q=80&w=1974&auto=format&fit=crop'); }
+        #rain-scene { background-image: url('https://images.unsplash.com/photo-1515694346937-94d85e41e620?q=80&w=1974&auto=format&fit=crop'); }
+        #thunder-scene { background-image: url('https://images.unsplash.com/photo-1605703215152-ed5548a1c6a2?q=80&w=1974&auto=format&fit=crop'); }
+        #night-scene { background-image: url('https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=2072&auto=format&fit=crop'); }
+
+
         .weather-card {
             background: var(--card-bg);
             backdrop-filter: blur(15px);
@@ -33,15 +45,13 @@
         }
 
         .forecast-item, .health-item {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
             transition: background-color 0.3s ease;
             animation: slide-in 0.5s ease-out forwards;
             opacity: 0;
         }
         
-        .dark .forecast-item, .dark .health-item { background: rgba(255, 255, 255, 0.05); }
-        .forecast-item:hover, .health-item:hover { background: rgba(255, 255, 255, 0.25); }
-        .dark .forecast-item:hover, .dark .health-item:hover { background: rgba(255, 255, 255, 0.1); }
+        .forecast-item:hover, .health-item:hover { background: rgba(255, 255, 255, 0.1); }
 
         .hourly-details {
             max-height: 0; overflow: hidden;
@@ -54,29 +64,6 @@
             border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .weather-scene {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -10;
-            opacity: 0; transition: opacity 0.5s ease-in-out;
-        }
-        .weather-scene.active { opacity: 1; }
-        
-        .star { position: absolute; background-color: white; border-radius: 50%; animation: twinkle 2s infinite alternate; }
-        @keyframes twinkle { from { opacity: 0.5; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
-
-        .raindrop {
-            position: absolute; bottom: 100%; width: 1px; height: 50px;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.4));
-            animation: rain linear infinite;
-        }
-        @keyframes rain { 0% { transform: translateY(0); } 100% { transform: translateY(110vh); } }
-
-        .lightning {
-            position: absolute; top: 0; left: 50%; width: 4px; height: 100%;
-            background: rgba(255, 255, 255, 0.8); transform: translateX(-50%);
-            opacity: 0; animation: flash 4s linear infinite;
-        }
-        @keyframes flash { 0%, 100% { opacity: 0; } 5%, 10%, 15% { opacity: 1; } 7%, 12% { opacity: 0; } }
 
         @keyframes slide-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -96,17 +83,19 @@
         #hourly-modal-backdrop.visible #hourly-modal { transform: translate(-50%, -50%) scale(1); opacity: 1; visibility: visible; }
         
         #today-forecast-container::-webkit-scrollbar { height: 6px; }
-        #today-forecast-container::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-        .dark #today-forecast-container::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.1); }
+        #today-forecast-container::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 
+        #sun-path-progress {
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+        #sun-icon {
+            transition: cx 1s ease-in-out, cy 1s ease-in-out;
+        }
 
-        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+        #city-input {
+            text-transform: capitalize;
+        }
+
+        @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
         
-        .theme-switch-wrapper { display: flex; align-items: center; }
-        .theme-switch { display: inline-block; height: 26px; position: relative; width: 50px; }
-        .theme-switch input { display:none; }
-        .slider { background-color: rgba(0,0,0,0.3); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
-        .slider:before { background-color: #fff; bottom: 3px; content: ""; height: 20px; left: 3px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; }
-        input:checked + .slider { background-color: #66a6ff; }
-        input:checked + .slider:before { transform: translateX(24px); }
    

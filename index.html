@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,15 +11,18 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <!-- Weather Mood Scenes -->
-    <div id="rain-scene" class="weather-scene"></div>
-    <div id="night-scene" class="weather-scene"></div>
-    <div id="thunder-scene" class="weather-scene"></div>
+    <div id="background-scenes">
+        <div id="clear-day-scene" class="weather-scene"></div>
+        <div id="clouds-scene" class="weather-scene"></div>
+        <div id="rain-scene" class="weather-scene"></div>
+        <div id="thunder-scene" class="weather-scene"></div>
+        <div id="night-scene" class="weather-scene"></div>
+    </div>
+
 
     <main class="w-full max-w-4xl mx-auto p-4 z-10 relative">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-xl font-bold" style="color: var(--text-secondary)">Weather Dashboard</h1>
-            <div class="theme-switch-wrapper"><label class="theme-switch" for="checkbox"><input type="checkbox" id="checkbox" /><div class="slider round"></div></label></div>
+            <h1 class="text-xl font-bold" style="color:var(--text-secondary)">Weather Dashboard</h1>
         </div>
 
         <div class="weather-card rounded-3xl p-6 sm:p-8 mb-6">
@@ -28,8 +31,8 @@
                 <div class="w-20 h-20 sm:w-24 sm:h-24" id="current-weather-icon"></div>
             </div>
             <form id="search-form" class="flex gap-2 mb-6">
-                <input type="text" id="city-input" placeholder="Enter city name..." class="w-full bg-white/10 dark:bg-black/10 border border-white/30 rounded-lg px-4 py-2 placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 transition">
-                <button type="submit" class="bg-white/30 hover:bg-white/40 dark:bg-white/10 dark:hover:bg-white/20 font-bold py-2 px-4 rounded-lg transition flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+                <input type="text" id="city-input" placeholder="Enter city name..." class="w-full bg-black/10 border border-white/30 rounded-lg px-4 py-2 placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 transition">
+                <button type="submit" class="bg-white/10 hover:bg-white/20 font-bold py-2 px-4 rounded-lg transition flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
             </form>
             <div id="current-weather-details" class="hidden">
                  <div class="flex flex-col sm:flex-row justify-between items-center">
@@ -47,7 +50,47 @@
              <div id="loader-container" class="flex justify-center items-center py-10"><div class="loader"></div></div>
         </div>
       
-        <!-- Health & Wellness Dashboard -->
+        <div id="sunrise-sunset-card" class="weather-card rounded-3xl p-6 sm:p-8 mb-6 hidden">
+            <h3 class="text-xl font-semibold mb-4">Sunrise & Sunset</h3>
+            <div class="grid grid-cols-2 gap-4 items-center">
+                <div>
+                    <p class="text-sm" style="color: var(--text-secondary);">Sunrise</p>
+                    <p class="text-2xl font-bold" id="sunrise-time">--:--</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm" style="color: var(--text-secondary);">Sunset</p>
+                    <p class="text-2xl font-bold" id="sunset-time">--:--</p>
+                </div>
+            </div>
+            <div class="relative h-24 mt-2">
+                <svg id="sun-path-svg" viewBox="0 0 200 100" class="w-full h-full" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:rgba(127, 127, 212, 0);" />
+                            <stop offset="100%" style="stop-color:rgba(127, 127, 212, 0.2);" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="200" height="100" fill="url(#skyGradient)" />
+                    <path d="M 0 80 H 200" stroke="currentColor" stroke-width="1" class="opacity-30"/>
+                    <path id="sun-path-base" d="M 10 80 A 90 90 0 0 1 190 80" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,4" fill="none" class="opacity-50"/>
+                    <path id="sun-path-progress" d="M 10 80 A 90 90 0 0 1 190 80" stroke="#FFD700" stroke-width="2.5" fill="none"/>
+                    <circle id="sun-icon" cx="10" cy="80" r="8" fill="#FFD700" stroke="white" stroke-width="2">
+                         <animate attributeName="r" values="8;9;8" dur="3s" repeatCount="indefinite" />
+                    </circle>
+                </svg>
+                <div class="absolute bottom-0 left-0 right-0 flex justify-between text-xs" style="color: var(--text-secondary);">
+                    <div class="text-center">
+                        <p>Dawn</p>
+                        <p id="dawn-time" class="font-semibold" style="color: var(--text-primary);">--:--</p>
+                    </div>
+                    <div class="text-center">
+                        <p>Dusk</p>
+                        <p id="dusk-time" class="font-semibold" style="color: var(--text-primary);">--:--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="health-dashboard" class="weather-card rounded-3xl p-6 sm:p-8 mb-6 hidden">
             <h3 class="text-xl font-semibold mb-4">❤️ Health & Wellness</h3>
             <div id="health-container" class="space-y-4">
@@ -57,12 +100,10 @@
             </div>
         </div>
 
-        <!-- Today's Forecast -->
         <div id="today-forecast-card" class="weather-card rounded-3xl p-6 sm:p-8 mb-6 hidden">
             <h3 class="text-xl font-semibold mb-4">Today's Forecast</h3>
             <div id="today-forecast-container" class="flex overflow-x-auto space-x-4 pb-4">
-                <!-- Hourly items will be injected here by JavaScript -->
-            </div>
+                </div>
         </div>
 
         <div id="forecast-card" class="weather-card rounded-3xl p-6 sm:p-8 hidden">
@@ -85,7 +126,6 @@
         </div>
     </div>
 
- <script src="./script.js"></script>
+   <script src="./script.js"></script>
 </body>
 </html>
-

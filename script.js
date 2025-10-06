@@ -11,13 +11,14 @@
         const currentWeatherDetails = S('current-weather-details'), forecastCard = S('forecast-card');
         const healthDashboard = S('health-dashboard'), aqiHealthEl = S('aqi-health'), uvHealthEl = S('uv-health'), hydrationHealthEl = S('hydration-health');
         const todayForecastCard = S('today-forecast-card'), todayForecastContainer = S('today-forecast-container');
-        const themeToggle = S('checkbox'), modalBackdrop = S('hourly-modal-backdrop'), modalCloseBtn = S('modal-close-btn');
+        const modalBackdrop = S('hourly-modal-backdrop'), modalCloseBtn = S('modal-close-btn');
+        const sunriseSunsetCard = S('sunrise-sunset-card'), sunriseTimeEl = S('sunrise-time'), sunsetTimeEl = S('sunset-time'), dawnTimeEl = S('dawn-time'), duskTimeEl = S('dusk-time');
+        const sunIcon = S('sun-icon'), sunPathProgress = S('sun-path-progress');
 
-        const weatherScenes = { rain: S('rain-scene'), night: S('night-scene'), thunder: S('thunder-scene') };
+        const weatherScenes = { clearDay: S('clear-day-scene'), clouds: S('clouds-scene'), rain: S('rain-scene'), thunder: S('thunder-scene'), night: S('night-scene') };
         let currentAqiInfo = null;
 
         searchForm.addEventListener('submit', (e) => { e.preventDefault(); if (cityInput.value.trim()) fetchWeatherData(cityInput.value.trim()); });
-        themeToggle.addEventListener('change', () => { document.documentElement.classList.toggle('dark', themeToggle.checked); localStorage.setItem('theme', themeToggle.checked ? 'dark' : 'light'); });
         modalCloseBtn.addEventListener('click', closeHourlyModal);
         modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) closeHourlyModal(); });
 
@@ -54,11 +55,11 @@
             humidity.textContent = `${current.main.humidity}%`;
             windSpeed.textContent = `${(current.wind.speed * 3.6).toFixed(1)} km/h`;
             
+            updateSunriseSunset(current.sys.sunrise, current.sys.sunset, current.timezone);
             updateWeatherMood(current.weather[0]);
             updateHealthDashboard(airQuality.list[0].main.aqi, uvi.value, current.main.temp);
-
             displayTodaysForecast(processTodaysForecast(forecast.list));
-
+            
             forecastContainer.innerHTML = '';
             const dailyForecasts = processForecastData(forecast.list);
             Object.values(dailyForecasts).slice(0, 4).forEach((data, index) => {
@@ -74,14 +75,46 @@
             hideLoading(false);
         }
 
+        function formatTime(unixTimestamp, timezoneOffset) {
+            const date = new Date((unixTimestamp + timezoneOffset) * 1000);
+            return date.toLocaleTimeString('en-US', {
+                timeZone: 'UTC',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            }).replace(' ', '');
+        }
+
+        function updateSunriseSunset(sunrise, sunset, timezone) {
+            const dawn = sunrise - (25 * 60); // Approx. 25 mins before sunrise
+            const dusk = sunset + (25 * 60); // Approx. 25 mins after sunset
+
+            sunriseTimeEl.textContent = formatTime(sunrise, timezone);
+            sunsetTimeEl.textContent = formatTime(sunset, timezone);
+            dawnTimeEl.textContent = formatTime(dawn, timezone);
+            duskTimeEl.textContent = formatTime(dusk, timezone);
+            
+            // Animate Sun Path
+            const now = Date.now() / 1000;
+            const totalDaylight = sunset - sunrise;
+            const elapsed = now - sunrise;
+            let percentage = Math.max(0, Math.min(1, elapsed / totalDaylight));
+
+            const pathLength = sunPathProgress.getTotalLength();
+            sunPathProgress.style.strokeDasharray = pathLength;
+            sunPathProgress.style.strokeDashoffset = pathLength * (1 - percentage);
+
+            const point = sunPathProgress.getPointAtLength(pathLength * percentage);
+            sunIcon.setAttribute('cx', point.x);
+            sunIcon.setAttribute('cy', point.y);
+        }
+
         function updateHealthDashboard(aqi, uv, temp) {
             currentAqiInfo = getAqiInfo(aqi);
             const uvInfo = getUvInfo(uv);
             const hydrationInfo = getHydrationInfo(temp);
-
             aqiHealthEl.innerHTML = `<h4 class="font-bold mb-1">${currentAqiInfo.title}</h4><p class="text-sm" style="color: var(--text-secondary)">${currentAqiInfo.text}</p>`;
             uvHealthEl.innerHTML = `<h4 class="font-bold mb-1">UV Index</h4><p class="text-sm" style="color: var(--text-secondary)">${uvInfo}</p>`;
-            
             if (hydrationInfo) {
                 hydrationHealthEl.innerHTML = `<h4 class="font-bold mb-1">Hydration Reminder</h4><p class="text-sm" style="color: var(--text-secondary)">${hydrationInfo}</p>`;
                 hydrationHealthEl.style.display = 'block';
@@ -114,81 +147,29 @@
         
         function updateWeatherMood(weather) {
             Object.values(weatherScenes).forEach(scene => scene.classList.remove('active'));
-            let background = '';
             const isNight = weather.icon.includes('n');
 
             switch (weather.main) {
-                case 'Clear':
-                    if (isNight) {
-                        background = 'linear-gradient(to bottom, #000080, #191970)';
-                        weatherScenes.night.classList.add('active'); createParticles(weatherScenes.night, 50, 'star');
-                    } else {
-                        background = 'linear-gradient(to bottom, #87CEEB, #FFD700)';
-                    }
-                    break;
-                case 'Clouds':
-                    background = 'linear-gradient(to bottom, #B0C4DE, #D3D3D3)';
-                    break;
-                case 'Rain': case 'Drizzle':
-                    background = 'linear-gradient(to bottom, #708090, #2F4F4F)';
-                    weatherScenes.rain.classList.add('active'); createParticles(weatherScenes.rain, 60, 'raindrop');
-                    break;
-                case 'Thunderstorm':
-                    background = 'linear-gradient(to bottom, #696969, #483D8B)';
-                    weatherScenes.thunder.classList.add('active'); createParticles(weatherScenes.thunder, 3, 'lightning');
-                    break;
-                default:
-                    background = 'linear-gradient(to bottom, #3b82f6, #6366f1)';
-            }
-            document.body.style.background = background;
-        }
-        
-        function createParticles(container, count, className) {
-            container.innerHTML = ''; 
-            for (let i = 0; i < count; i++) {
-                const p = document.createElement('div'); p.className = className;
-                if (className === 'star') {
-                    const size = Math.random() * 2 + 1;
-                    p.style.width = `${size}px`; p.style.height = `${size}px`;
-                    p.style.top = `${Math.random() * 100}%`; p.style.left = `${Math.random() * 100}%`;
-                    p.style.animationDelay = `${Math.random() * 2}s`; p.style.animationDuration = `${Math.random() * 2 + 1}s`;
-                } else if (className === 'lightning') {
-                    p.style.left = `${Math.random() * 100}%`; p.style.animationDelay = `${Math.random() * 4}s`;
-                } else { // raindrop
-                    p.style.left = `${Math.random() * 100}vw`; p.style.animationDelay = `${Math.random() * 2}s`;
-                    p.style.animationDuration = `${Math.random() * 0.5 + 0.5}s`;
-                }
-                container.appendChild(p);
+                case 'Clear': (isNight) ? weatherScenes.night.classList.add('active') : weatherScenes.clearDay.classList.add('active'); break;
+                case 'Clouds': weatherScenes.clouds.classList.add('active'); break;
+                case 'Rain': case 'Drizzle': case 'Mist': case 'Haze': case 'Fog': weatherScenes.rain.classList.add('active'); break;
+                case 'Thunderstorm': weatherScenes.thunder.classList.add('active'); break;
+                default: weatherScenes.clouds.classList.add('active');
             }
         }
         
         function processTodaysForecast(list) {
             const today = new Date().toISOString().slice(0, 10);
-            return list.filter(item => item.dt_txt.slice(0, 10) === today)
-                .map(item => ({
-                    time: item.dt_txt.slice(11, 16),
-                    temp: Math.round(item.main.temp),
-                    icon: item.weather[0].icon,
-                    feels_like: Math.round(item.main.feels_like),
-                    humidity: item.main.humidity,
-                    wind: (item.wind.speed * 3.6).toFixed(1)
-                }));
+            return list.filter(item => item.dt_txt.slice(0, 10) === today).map(item => ({ time: item.dt_txt.slice(11, 16), temp: Math.round(item.main.temp), icon: item.weather[0].icon, feels_like: Math.round(item.main.feels_like), humidity: item.main.humidity, wind: (item.wind.speed * 3.6).toFixed(1) }));
         }
 
         function displayTodaysForecast(hourlyData) {
             todayForecastContainer.innerHTML = '';
-            if (hourlyData.length === 0) {
-                todayForecastCard.classList.add('hidden');
-                return;
-            }
-            
+            if (hourlyData.length === 0) { todayForecastCard.classList.add('hidden'); return; }
             hourlyData.forEach(h => {
                 const hourDiv = document.createElement('div');
-                hourDiv.className = 'flex-shrink-0 text-center bg-white/10 dark:bg-black/10 rounded-lg p-3 w-24 cursor-pointer transition-transform hover:scale-105';
-                hourDiv.innerHTML = `
-                    <p class="font-semibold text-sm">${h.time}</p>
-                    <img src="https://openweathermap.org/img/wn/${h.icon}.png" class="mx-auto w-12 h-12">
-                    <p class="font-bold text-lg">${h.temp}°C</p>`;
+                hourDiv.className = 'flex-shrink-0 text-center bg-black/10 rounded-lg p-3 w-24 cursor-pointer transition-transform hover:scale-105';
+                hourDiv.innerHTML = `<p class="font-semibold text-sm">${h.time}</p><img src="https://openweathermap.org/img/wn/${h.icon}.png" class="mx-auto w-12 h-12"><p class="font-bold text-lg">${h.temp}°C</p>`;
                 hourDiv.addEventListener('click', () => openHourlyModal(h));
                 todayForecastContainer.appendChild(hourDiv);
             });
@@ -198,7 +179,7 @@
             const daily = {};
             list.forEach(item => {
                 const date = item.dt_txt.slice(0, 10);
-                if (date === new Date().toISOString().slice(0, 10)) return; // Skip today
+                if (date === new Date().toISOString().slice(0, 10)) return;
                 if (!daily[date]) daily[date] = { temps: [], hourly: [], icons: {}, day: new Date(item.dt * 1000).toLocaleDateString('en-US', { weekday: 'long' }) };
                 daily[date].temps.push(item.main.temp);
                 daily[date].hourly.push({ time: item.dt_txt.slice(11, 16), temp: Math.round(item.main.temp), icon: item.weather[0].icon, feels_like: Math.round(item.main.feels_like), humidity: item.main.humidity, wind: (item.wind.speed * 3.6).toFixed(1) });
@@ -219,7 +200,7 @@
             grid.className = 'grid grid-cols-4 sm:grid-cols-8 gap-2 text-sm';
             hourly.forEach(h => {
                 const hourDiv = document.createElement('div');
-                hourDiv.className = 'bg-white/10 dark:bg-black/10 rounded-lg py-2 cursor-pointer transition-transform hover:scale-105';
+                hourDiv.className = 'bg-black/10 rounded-lg py-2 cursor-pointer transition-transform hover:scale-105';
                 hourDiv.innerHTML = `<p class="font-semibold">${h.time}</p><img src="https://openweathermap.org/img/wn/${h.icon}.png" class="mx-auto w-8 h-8"><p>${h.temp}°C</p>`;
                 hourDiv.addEventListener('click', () => openHourlyModal(h));
                 grid.appendChild(hourDiv);
@@ -240,15 +221,13 @@
         }
 
         function closeHourlyModal() { modalBackdrop.classList.remove('visible'); }
-        function showLoading() { loaderContainer.style.display = 'flex'; [currentWeatherDetails, forecastCard, healthDashboard, todayForecastCard].forEach(el => el.classList.add('hidden')); }
+        function showLoading() { loaderContainer.style.display = 'flex'; [currentWeatherDetails, forecastCard, healthDashboard, todayForecastCard, sunriseSunsetCard].forEach(el => el.classList.add('hidden')); }
         function hideLoading(isError) {
             loaderContainer.style.display = 'none';
-            if (!isError) { [currentWeatherDetails, forecastCard, healthDashboard, todayForecastCard].forEach(el => el.classList.remove('hidden')); }
+            if (!isError) { [currentWeatherDetails, forecastCard, healthDashboard, todayForecastCard, sunriseSunsetCard].forEach(el => el.classList.remove('hidden')); }
         }
         function toTitleCase(str) { return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()); }
 
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark'); themeToggle.checked = true; }
-        fetchWeatherData('Shirpur');
+        fetchWeatherData('Surat');
         
     });
